@@ -67,7 +67,7 @@ class ADDC(ADComputer):
         for r in q:
             ip = r.address
 
-        ldap = self.ad.auth.getLDAPConnection(hostname=ip,
+        ldap = self.ad.auth.getLDAPConnection(hostname=self.hostname, ip=ip,
                                               baseDN=self.ad.baseDN, protocol=protocol)
         if resolver:
             self.resolverldap = ldap
@@ -113,7 +113,7 @@ class ADDC(ADComputer):
                 except (resolver.NXDOMAIN, resolver.Timeout):
                     continue
 
-        self.gcldap = self.ad.auth.getLDAPConnection(hostname=ip, gc=True,
+        self.gcldap = self.ad.auth.getLDAPConnection(hostname=self.hostname, ip=ip, gc=True,
                                                      baseDN=self.ad.baseDN, protocol=protocol)
         return self.gcldap is not None
 
@@ -624,17 +624,19 @@ class AD(object):
                 else:
                     logging.warning('Could not find a global catalog server. Please specify one with -gc')
 
-        if kerberos is True:
-            try:
-                q = self.dnsresolver.query('_kerberos._tcp.dc._msdcs', 'SRV', tcp=self.dns_tcp)
-                for r in q:
-                    kdc = str(r.target).rstrip('.')
-                    logging.debug('Found KDC: %s' % str(r.target).rstrip('.'))
-                    if kdc not in self._kdcs:
-                        self._kdcs.append(kdc)
-                        self.auth.kdc = self._kdcs[0]
-            except resolver.NXDOMAIN:
-                pass
+
+        try:
+            kquery = query.replace('pdc','dc').replace('_ldap','_kerberos')
+            q = self.dnsresolver.query(kquery, 'SRV', tcp=self.dns_tcp)
+            # TODO: Get the additional records here to get the DC ip immediately
+            for r in q:
+                kdc = str(r.target).rstrip('.')
+                logging.debug('Found KDC: %s' % str(r.target).rstrip('.'))
+                if kdc not in self._kdcs:
+                    self._kdcs.append(kdc)
+                    self.auth.kdc = self._kdcs[0]
+        except resolver.NXDOMAIN:
+            pass
 
         return True
 

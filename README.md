@@ -3,6 +3,10 @@
 ![PyPI version](https://img.shields.io/pypi/v/bloodhound.svg)
 ![License: MIT](https://img.shields.io/pypi/l/bloodhound.svg)
 
+**Fork Changes**: Added basic Kerberos support on top of `master` branch by re-integrating the [kerberos branch](https://github.com/fox-it/BloodHound.py/commit/5ce444f8684c18190e67b878e2d32e0084c98138).
+
+---
+
 BloodHound.py is a Python based ingestor for [BloodHound](https://github.com/BloodHoundAD/BloodHound), based on [Impacket](https://github.com/CoreSecurity/impacket/).
 
 This version of BloodHound.py is **only compatible with BloodHound 4.2 or newer**. For the 3.x range, use version 1.1.1 via pypi. As of version 1.3, BloodHound.py only supports Python 3, Python 2 is no longer tested and may break in the future.

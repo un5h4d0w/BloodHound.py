@@ -256,11 +256,7 @@ def main():
     if args.v is True:
         logger.setLevel(logging.DEBUG)
 
-    if args.kerberos is True:
-        logging.debug('Authentication: kerberos')
-        kerberize()
-        auth = ADAuthentication()
-    elif args.username is not None and args.password is not None:
+    if args.username is not None and args.password is not None:
         logging.debug('Authentication: username/password')
         auth = ADAuthentication(username=args.username, password=args.password, domain=args.domain)
     elif args.username is not None and args.password is None and args.hashes is None:
@@ -303,6 +299,16 @@ def main():
                           args.global_catalog)
             sys.exit(1)
         ad.override_gc(args.global_catalog)
+
+    if args.kerberos is True:
+        logging.debug('Authentication: Kerberos ccache')
+        # kerberize()
+        if not auth.load_ccache():
+            logging.debug('Could not load ticket from ccache, trying to request a TGT instead')
+            auth.get_tgt()
+    else:
+        auth.get_tgt()
+
     # For adding timestamp prefix to the outputfiles 
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S') + "_"
     bloodhound = BloodHound(ad)
